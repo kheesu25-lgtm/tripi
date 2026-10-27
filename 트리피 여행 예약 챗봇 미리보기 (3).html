@@ -155,6 +155,75 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .toast { position: fixed; left: 50%; bottom: 24px; z-index: 20; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; padding: 11px 16px; border-radius: 10px; background: #202631; color: white; font-size: 12px; box-shadow: 0 5px 22px #0002; transition: .2s; max-width: calc(100% - 30px); }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 .mobile-menu { display: none; border: 0; background: transparent; color: var(--ink); font-size: 20px; }
+
+.topbar-actions { display: flex; gap: 8px; align-items: center; }
+.theme-toggle { white-space: nowrap; }
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --brand: #7ca8ff;
+  --brand-dark: #a9c5ff;
+  --brand-soft: #263957;
+  --ink: #e8edf6;
+  --muted: #a2adbf;
+  --line: #303b4d;
+  --surface: #1c2431;
+  --canvas: #111722;
+  --green: #51c995;
+}
+html[data-theme="dark"] body { background: var(--canvas); color: var(--ink); }
+html[data-theme="dark"] .sidebar,
+html[data-theme="dark"] .chat-panel,
+html[data-theme="dark"] .topbar,
+html[data-theme="dark"] .starter,
+html[data-theme="dark"] .icon-btn,
+html[data-theme="dark"] .trip-summary,
+html[data-theme="dark"] .day-tab,
+html[data-theme="dark"] .add-schedule-btn,
+html[data-theme="dark"] .trip-search,
+html[data-theme="dark"] .edit-dialog,
+html[data-theme="dark"] .edit-dialog input,
+html[data-theme="dark"] .edit-dialog select,
+html[data-theme="dark"] .edit-dialog textarea,
+html[data-theme="dark"] .trip-search input,
+html[data-theme="dark"] .trip-search select { background: #1b2432; color: var(--ink); }
+html[data-theme="dark"] .topbar { background: rgba(24, 32, 45, .94); }
+html[data-theme="dark"] .itinerary-panel { background: #151d29; }
+html[data-theme="dark"] .side-link { color: #c2ccdb; }
+html[data-theme="dark"] .side-link.active { background: var(--brand-soft); color: #c4d7ff; }
+html[data-theme="dark"] .side-link.active > span:first-child,
+html[data-theme="dark"] .text-btn,
+html[data-theme="dark"] .eyebrow,
+html[data-theme="dark"] .trip-footer a { color: var(--brand); }
+html[data-theme="dark"] .secure-note,
+html[data-theme="dark"] .trip-footer { background: #202d42; border-color: #354764; color: #a9c5ff; }
+html[data-theme="dark"] .secure-note small,
+html[data-theme="dark"] .trip-footer p { color: #a9b9d2; }
+html[data-theme="dark"] .outline-btn,
+html[data-theme="dark"] .composer { background: #1b2432; color: var(--ink); border-color: #3a465a; }
+html[data-theme="dark"] .bubble { background: #252f3f; color: #e0e7f1; }
+html[data-theme="dark"] .message.user .bubble { background: #263957; color: #dce8ff; }
+html[data-theme="dark"] .message.user .avatar { background: #263957; color: #c4d7ff; }
+html[data-theme="dark"] .composer-wrap { background: linear-gradient(0deg, #151d29 78%, #151d29d9); }
+html[data-theme="dark"] .composer textarea { color: var(--ink); }
+html[data-theme="dark"] .trip-meta { border-top-color: var(--line); }
+html[data-theme="dark"] .trip-meta b,
+html[data-theme="dark"] .trip-search label,
+html[data-theme="dark"] .edit-dialog label { color: #c2ccdb; }
+html[data-theme="dark"] .schedule-item:not(:last-child)::before { background: #3a465a; }
+html[data-theme="dark"] .schedule-marker { background: #151d29; }
+html[data-theme="dark"] .type-tag { background: #263957; color: #c4d7ff; }
+html[data-theme="dark"] .item-actions button:hover { background: #263957; color: var(--brand); }
+html[data-theme="dark"] .empty-day { border-color: #3a465a; }
+html[data-theme="dark"] .settings-note { background: #202d42; border-color: #354764; color: #c2d2ed; }
+html[data-theme="dark"] .status-dot { box-shadow: 0 0 0 3px #1e4037; }
+html[data-theme="dark"] .edit-dialog::backdrop { background: #050912b8; }
+html[data-theme="dark"] .trip-search-btn { background: #376fdb; }
+@media (max-width: 520px) {
+  .topbar-actions { gap: 5px; }
+  .theme-toggle { font-size: 0 !important; padding: 9px 10px; }
+  .theme-toggle::first-letter { font-size: 15px; }
+}
+
 @media (max-width: 1050px) {
   .app-shell { grid-template-columns: 205px minmax(0, 1fr); }
   .workspace { grid-template-columns: minmax(320px, 1fr) 310px; }
@@ -218,7 +287,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
       <header class="topbar">
         <button class="mobile-menu" id="mobileMenu" aria-label="메뉴 열기">☰</button>
         <div class="top-title"><span class="status-dot"></span><strong>트리피</strong><span class="muted">AI 여행 플래너</span></div>
-        <div style="display:flex;gap:8px;align-items:center"><button class="outline-btn" id="aiSettingsBtn">AI 설정 ⚙</button><button class="outline-btn" id="exportBtn">일정 내보내기 ↓</button></div>
+        <div class="topbar-actions"><button class="outline-btn theme-toggle" id="themeToggleBtn" type="button" aria-label="다크 모드로 전환" aria-pressed="false">☾ 다크 모드</button><button class="outline-btn" id="aiSettingsBtn">AI 설정 ⚙</button><button class="outline-btn" id="exportBtn">일정 내보내기 ↓</button></div>
       </header>
 
       <div class="workspace">
@@ -689,6 +758,26 @@ $("currentTripBtn").addEventListener("click", () => {
   document.querySelector(".itinerary-panel").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 $("mobileMenu").addEventListener("click", () => $("sidebar").classList.toggle("open"));
+
+// Theme preference persists between visits.
+const themeToggleBtn = $("themeToggleBtn");
+function applyTheme(theme) {
+  const isDark = theme === "dark";
+  document.documentElement.dataset.theme = isDark ? "dark" : "light";
+  themeToggleBtn.textContent = isDark ? "☀ 라이트 모드" : "☾ 다크 모드";
+  themeToggleBtn.setAttribute("aria-label", isDark ? "라이트 모드로 전환" : "다크 모드로 전환");
+  themeToggleBtn.setAttribute("aria-pressed", String(isDark));
+  const themeColor = document.querySelector('meta[name="theme-color"]');
+  if (themeColor) themeColor.content = isDark ? "#111722" : "#2460d3";
+}
+let savedTheme = "light";
+try { savedTheme = localStorage.getItem("tripi-theme") === "dark" ? "dark" : "light"; } catch (_) {}
+applyTheme(savedTheme);
+themeToggleBtn.addEventListener("click", () => {
+  const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  applyTheme(nextTheme);
+  try { localStorage.setItem("tripi-theme", nextTheme); } catch (_) {}
+});
 document.querySelectorAll(".sidebar .side-link, .new-chat").forEach(btn => btn.addEventListener("click", () => {
   if (window.innerWidth <= 800) $("sidebar").classList.remove("open");
 }));
