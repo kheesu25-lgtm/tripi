@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#2460d3">
+  <title>트리피 · 여행 예약 도우미</title>
+  <style>
+:root {
+  --brand: #2460d3;
+  --brand-dark: #1d50b5;
+  --brand-soft: #eaf1ff;
+  --ink: #202631;
+  --muted: #747b87;
+  --line: #e3e7ed;
+  --surface: #ffffff;
+  --canvas: #f7f8fb;
+  --green: #168653;
+  --radius: 16px;
+  font-family: Inter, Pretendard, "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--ink);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); }
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3px solid #9bbcff; outline-offset: 2px; }
+.app-shell { min-height: 100vh; display: grid; grid-template-columns: 244px minmax(0, 1fr); }
+.sidebar { background: #fff; border-right: 1px solid var(--line); padding: 25px 15px 18px; display: flex; flex-direction: column; min-height: 100vh; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; padding: 0 9px 28px; }
+.brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 13px 13px 13px 5px; color: white; font-weight: 800; font-size: 21px; background: linear-gradient(145deg, #3678ed, #174ab6); }
+.brand strong { display: block; font-size: 22px; letter-spacing: -1px; line-height: 1; }
+.brand small { color: var(--muted); font-size: 10px; letter-spacing: .3px; }
+.new-chat { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; border-radius: 11px; padding: 12px 13px; background: var(--brand); color: #fff; font-weight: 650; text-align: left; }
+.new-chat span { font-size: 19px; }
+.side-label { padding: 26px 10px 9px; color: #8b929e; font-size: 11px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; }
+.side-link { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; border: 0; border-radius: 9px; padding: 11px 10px; margin: 2px 0; text-align: left; background: transparent; color: #4c5563; font-size: 13px; }
+.side-link > span:first-child { width: 17px; color: #7a8494; text-align: center; }
+.side-link.active { background: var(--brand-soft); color: var(--brand-dark); font-weight: 650; }
+.side-link.active > span:first-child { color: var(--brand); }
+.side-dot { width: 6px; height: 6px; margin-left: auto; border-radius: 50%; background: var(--brand); }
+.sidebar-bottom { margin-top: auto; }
+.secure-note { display: flex; gap: 9px; padding: 13px 9px; background: #f5f8ff; border: 1px solid #e6edff; border-radius: 11px; color: var(--brand); }
+.secure-note strong, .secure-note small { display: block; }
+.secure-note strong { font-size: 11px; }
+.secure-note small { margin-top: 4px; color: #6b7790; font-size: 10px; line-height: 1.4; }
+.api-link { display: block; padding: 12px 9px 0; color: var(--muted); text-decoration: none; font-size: 11px; }
+.main { min-width: 0; }
+.topbar { height: 68px; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; background: rgba(255,255,255,.9); border-bottom: 1px solid var(--line); }
+.top-title { display: flex; align-items: center; gap: 9px; font-size: 14px; }
+.top-title strong { font-size: 15px; }
+.muted { color: var(--muted); font-size: 12px; }
+.status-dot { width: 8px; height: 8px; background: #23aa70; border-radius: 50%; box-shadow: 0 0 0 3px #e4f7ed; }
+.outline-btn, .primary-btn { border-radius: 9px; padding: 10px 13px; font-size: 12px; font-weight: 650; }
+.outline-btn { border: 1px solid var(--line); color: #465061; background: white; }
+.primary-btn { border: 1px solid var(--brand); background: var(--brand); color: white; }
+.workspace { display: grid; grid-template-columns: minmax(360px, 1fr) minmax(310px, 365px); max-width: 1500px; margin: 0 auto; min-height: calc(100vh - 68px); }
+.chat-panel { min-width: 0; display: flex; flex-direction: column; border-right: 1px solid var(--line); background: #fff; }
+.chat-scroll { flex: 1; overflow-y: auto; padding: 25px clamp(20px, 4vw, 58px) 15px; }
+.welcome { max-width: 660px; margin: 5vh auto 0; text-align: center; }
+.hero-icon { width: 58px; height: 58px; display: grid; place-items: center; margin: 0 auto 22px; border-radius: 20px; color: white; font-size: 27px; background: linear-gradient(145deg, #4386f7, #1c51bf); box-shadow: 0 10px 25px #2460d326; transform: rotate(-4deg); }
+.eyebrow { color: var(--brand); font-size: 10px; font-weight: 800; letter-spacing: 1.2px; }
+.welcome h1 { margin: 12px 0 10px; font-size: clamp(26px, 3vw, 34px); line-height: 1.25; letter-spacing: -1.3px; }
+.welcome > p { color: var(--muted); font-size: 13px; line-height: 1.8; margin: 0; }
+.starter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 30px; text-align: left; }
+.starter { position: relative; min-height: 103px; padding: 14px; border: 1px solid var(--line); border-radius: 13px; background: white; text-align: left; transition: border-color .15s, transform .15s; }
+.starter:hover { border-color: #9db9f8; transform: translateY(-2px); }
+.starter > span { display: block; color: var(--brand); font-size: 18px; margin-bottom: 10px; }
+.starter strong, .starter small { display: block; }
+.starter strong { font-size: 12px; }
+.starter small { color: var(--muted); font-size: 10px; margin-top: 5px; }
+.starter b { position: absolute; top: 12px; right: 13px; color: #9aa2af; }
+.messages { max-width: 700px; margin: 0 auto; display: flex; flex-direction: column; gap: 19px; }
+.message { display: flex; gap: 9px; align-items: flex-start; }
+.message.user { flex-direction: row-reverse; }
+.avatar { flex: 0 0 30px; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 10px; background: var(--brand); color: white; font-size: 12px; font-weight: 750; }
+.message.user .avatar { background: #eaf1ff; color: var(--brand); }
+.bubble { max-width: min(86%, 560px); padding: 12px 14px; border-radius: 4px 15px 15px 15px; background: #f5f7fa; color: #333c4a; font-size: 13px; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
+.message.user .bubble { background: var(--brand-soft); border-radius: 15px 4px 15px 15px; color: #1f3f7b; }
+.bubble .typing { display: inline-flex; gap: 4px; }
+.typing i { width: 5px; height: 5px; border-radius: 50%; background: #8b98b0; animation: pulse 1s infinite alternate; }
+.typing i:nth-child(2) { animation-delay: .2s; } .typing i:nth-child(3) { animation-delay: .4s; }
+@keyframes pulse { to { opacity: .25; transform: translateY(-3px); } }
+.composer-wrap { padding: 12px clamp(16px, 3vw, 42px) 16px; background: linear-gradient(0deg, #fff 78%, #ffffffd9); }
+.composer { max-width: 700px; margin: 0 auto; border: 1px solid #d9dee8; border-radius: 15px; padding: 10px 11px 8px 15px; box-shadow: 0 5px 18px #273b5c0b; }
+.composer:focus-within { border-color: #8eaff8; box-shadow: 0 0 0 3px #2460d30d; }
+.composer textarea { display: block; width: 100%; min-height: 31px; max-height: 120px; resize: none; border: 0; outline: 0; color: var(--ink); font-size: 13px; line-height: 1.5; background: transparent; }
+.composer textarea::placeholder { color: #9aa1ad; }
+.composer-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 5px; }
+.composer-hint { color: #969eaa; font-size: 10px; }
+.composer-hint span { color: var(--brand); }
+.send-btn { display: grid; place-items: center; width: 34px; height: 34px; border: 0; border-radius: 10px; color: white; background: var(--brand); font-size: 22px; line-height: 1; }
+.send-btn:disabled { opacity: .45; cursor: not-allowed; }
+.disclaimer { max-width: 700px; margin: 9px auto 0; color: #9aa1ad; font-size: 9px; line-height: 1.5; text-align: center; }
+.itinerary-panel { min-width: 0; padding: 25px 20px 18px; background: #fafbfc; }
+.itinerary-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 19px; }
+.itinerary-header h2 { margin: 5px 0 0; font-size: 21px; letter-spacing: -.6px; }
+.icon-btn { width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 10px; background: white; color: #5b6574; font-size: 20px; display: grid; place-items: center; }
+.trip-summary { padding: 12px; border: 1px solid var(--line); border-radius: 15px; background: white; }
+.destination-art { position: relative; height: 105px; overflow: hidden; border-radius: 10px; background: linear-gradient(160deg, #d9e9ff, #eff5ff 60%, #d2e5f3); }
+.destination-art > span { position: absolute; z-index: 3; top: 14px; right: 18px; color: #e6a94c; font-size: 23px; }
+.art-sun { position: absolute; width: 39px; height: 39px; right: 47px; top: 15px; border-radius: 50%; background: #f7cf8a; }
+.art-mountain { position: absolute; bottom: 0; left: -5%; width: 115%; height: 68px; background: #a9c8dc; clip-path: polygon(0 100%, 20% 25%, 35% 60%, 52% 8%, 76% 72%, 90% 34%, 100% 70%, 100% 100%); }
+.art-water { position: absolute; bottom: 0; width: 100%; height: 24px; background: #77b6d3; opacity: .8; clip-path: polygon(0 40%, 20% 25%, 42% 55%, 66% 22%, 100% 42%, 100% 100%, 0 100%); }
+.destination-art label { position: absolute; bottom: 9px; left: 12px; z-index: 4; color: #fff; font-size: 8px; font-weight: 800; letter-spacing: 1.2px; text-shadow: 0 1px 5px #274f6c; }
+.trip-title-row { display: flex; align-items: flex-start; justify-content: space-between; padding-top: 13px; }
+.trip-title-row h3 { margin: 0; font-size: 16px; }
+.trip-title-row p { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
+.text-btn { border: 0; padding: 3px; background: transparent; color: var(--brand); font-size: 11px; font-weight: 650; }
+.trip-meta { display: flex; gap: 15px; padding-top: 12px; margin-top: 12px; border-top: 1px solid #eef0f4; color: var(--muted); font-size: 10px; }
+.trip-meta b { color: #4a5361; font-weight: 650; }
+.itinerary-toolbar { display: flex; justify-content: space-between; align-items: center; margin: 23px 1px 12px; color: #707987; font-size: 10px; font-weight: 750; letter-spacing: .4px; }
+.day-tabs { display: flex; gap: 7px; overflow-x: auto; padding: 1px 0 9px; }
+.day-tab { flex: 0 0 auto; min-width: 54px; border: 1px solid var(--line); border-radius: 9px; padding: 8px 9px; background: white; color: #6b7482; font-size: 10px; }
+.day-tab strong { display: block; font-size: 12px; margin-bottom: 3px; }
+.day-tab.active { border-color: var(--brand); background: var(--brand); color: white; }
+.schedule-list { display: flex; flex-direction: column; }
+.schedule-item { position: relative; display: grid; grid-template-columns: 44px 12px minmax(0, 1fr) 24px; gap: 8px; padding: 12px 0; }
+.schedule-item:not(:last-child)::before { content: ""; position: absolute; left: 57.5px; top: 36px; bottom: -3px; width: 1px; background: #dce2eb; }
+.schedule-time { padding-top: 3px; color: #697383; font-size: 10px; font-weight: 650; }
+.schedule-marker { position: relative; grid-column: 2; justify-self: center; align-self: start; margin-top: 4px; width: 9px; height: 9px; border: 2px solid var(--brand); border-radius: 50%; background: #fafbfc; z-index: 1; }
+.schedule-content { grid-column: 3; min-width: 0; }
+.schedule-content h4 { margin: 0; font-size: 12px; line-height: 1.5; font-weight: 700; }
+.schedule-content p { margin: 4px 0 0; color: #8b929e; font-size: 10px; line-height: 1.5; overflow-wrap: anywhere; }
+.type-tag { display: inline-block; margin-top: 6px; padding: 3px 6px; border-radius: 5px; background: #edf2ff; color: #496cb8; font-size: 9px; }
+.item-actions { grid-column: 4; display: flex; flex-direction: column; gap: 4px; }
+.item-actions button { width: 24px; height: 24px; border: 0; border-radius: 6px; color: #9aa1ad; background: transparent; font-size: 12px; }
+.item-actions button:hover { background: #eaf1ff; color: var(--brand); }
+.empty-day { padding: 25px 12px; color: #9098a5; text-align: center; font-size: 11px; line-height: 1.7; border: 1px dashed #d9dee8; border-radius: 10px; }
+.add-schedule-btn { width: 100%; padding: 11px; margin-top: 9px; border: 1px dashed #b9c9e8; border-radius: 10px; background: white; color: var(--brand); font-size: 11px; font-weight: 650; }
+.trip-footer { display: flex; gap: 10px; margin-top: 24px; padding: 13px 11px; border-radius: 11px; background: #edf3ff; }
+.footer-icon { flex: 0 0 27px; height: 27px; display: grid; place-items: center; border-radius: 8px; color: var(--brand); background: white; }
+.trip-footer strong { font-size: 11px; }
+.trip-footer p { margin: 5px 0 7px; color: #6e7d98; font-size: 10px; line-height: 1.6; }
+.trip-footer a { color: var(--brand); font-size: 10px; font-weight: 700; text-decoration: none; }
+.trip-search { margin-top: 18px; padding: 15px 13px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+.trip-search h3 { margin: 0 0 5px; font-size: 13px; }
+.trip-search > p { margin: 0 0 12px; color: var(--muted); font-size: 10px; line-height: 1.6; }
+.trip-search label { display: block; margin-top: 10px; color: #596273; font-size: 10px; font-weight: 650; }
+.trip-search input, .trip-search select { display: block; width: 100%; min-width: 0; margin-top: 5px; padding: 10px; border: 1px solid #dfe4ec; border-radius: 8px; background: #fff; color: var(--ink); font-size: 11px; }
+.trip-search .form-row { gap: 8px; }
+.trip-search-btn { width: 100%; margin-top: 12px; padding: 11px; border: 0; border-radius: 9px; background: #2460d3; color: #fff; font-size: 11px; font-weight: 700; }
+.trip-search-note { margin-top: 9px; color: #8992a1; font-size: 9px; line-height: 1.55; }
+.edit-dialog { width: min(420px, calc(100% - 28px)); border: 1px solid var(--line); border-radius: 18px; padding: 22px; color: var(--ink); box-shadow: 0 20px 70px #1c2c4826; }
+.edit-dialog::backdrop { background: #18243b66; backdrop-filter: blur(3px); }
+.dialog-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.dialog-head h2 { margin: 5px 0 0; font-size: 20px; }
+.edit-dialog label { display: block; margin: 13px 0; color: #535d6c; font-size: 11px; font-weight: 650; }
+.edit-dialog input, .edit-dialog select { display: block; width: 100%; margin-top: 7px; padding: 11px; border: 1px solid var(--line); border-radius: 9px; background: white; color: var(--ink); font-size: 12px; }
+.edit-dialog textarea { display: block; width: 100%; min-height: 100px; margin-top: 7px; padding: 11px; border: 1px solid var(--line); border-radius: 9px; background: white; color: var(--ink); font-size: 12px; line-height: 1.6; resize: vertical; }
+.settings-note { padding: 11px 12px; border: 1px solid #dbe7ff; border-radius: 10px; background: #f3f7ff; color: #536783; font-size: 11px; line-height: 1.6; }
+.settings-status { margin-top: 10px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px; }
+.toast { position: fixed; left: 50%; bottom: 24px; z-index: 20; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; padding: 11px 16px; border-radius: 10px; background: #202631; color: white; font-size: 12px; box-shadow: 0 5px 22px #0002; transition: .2s; max-width: calc(100% - 30px); }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.mobile-menu { display: none; border: 0; background: transparent; color: var(--ink); font-size: 20px; }
+@media (max-width: 1050px) {
+  .app-shell { grid-template-columns: 205px minmax(0, 1fr); }
+  .workspace { grid-template-columns: minmax(320px, 1fr) 310px; }
+  .sidebar { padding-inline: 11px; }
+  .itinerary-panel { padding-inline: 14px; }
+  .chat-scroll { padding-inline: 22px; }
+}
+@media (max-width: 800px) {
+  .app-shell { display: block; }
+  .sidebar { position: fixed; z-index: 30; inset: 0 auto 0 0; width: 260px; transform: translateX(-105%); transition: transform .2s; box-shadow: 12px 0 35px #10264b12; }
+  .sidebar.open { transform: translateX(0); }
+  .mobile-menu { display: block; }
+  .topbar { height: 60px; padding: 0 14px; gap: 10px; }
+  .top-title { margin-right: auto; }
+  .top-title .muted { display: none; }
+  .workspace { display: flex; flex-direction: column; min-height: calc(100vh - 60px); }
+  .chat-panel { min-height: 68vh; border-right: 0; }
+  .chat-scroll { padding: 22px 16px 15px; }
+  .welcome { margin-top: 3vh; }
+  .starter-grid { gap: 8px; margin-top: 23px; }
+  .starter { padding: 11px; min-height: 98px; }
+  .itinerary-panel { border-top: 1px solid var(--line); padding: 22px 16px; }
+  .destination-art { height: 120px; }
+  .itinerary-panel .schedule-list { max-width: 560px; }
+  .itinerary-panel .trip-summary { max-width: 560px; }
+  .itinerary-panel .trip-footer { max-width: 560px; }
+  .disclaimer { font-size: 9px; }
+}
+@media (max-width: 420px) {
+  .topbar .outline-btn { padding: 9px; font-size: 10px; }
+  .welcome h1 { font-size: 26px; }
+  .welcome > p { font-size: 12px; }
+  .starter strong { font-size: 11px; }
+  .starter small { font-size: 9px; }
+  .form-row { gap: 8px; }
+}
+
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="트리피 홈">
+        <span class="brand-mark">T</span>
+        <span><strong>tripi</strong><small>travel assistant</small></span>
+      </a>
+      <button class="new-chat" id="newChatBtn"><span>＋</span> 새 여행 계획</button>
+      <div class="side-label">여행 계획</div>
+      <button class="side-link active" id="currentTripBtn"><span>✈</span> 오사카 여행 <span class="side-dot"></span></button>
+      <div class="side-label">빠른 시작</div>
+      <button class="side-link prompt-link" data-prompt="예산에 맞춰 3박 4일 해외여행을 계획해줘. 먼저 필요한 정보를 질문해줘."><span>◷</span> 예산으로 여행 찾기</button>
+      <button class="side-link prompt-link" data-prompt="항공편과 숙소를 비교할 때 어떤 조건을 먼저 정하면 좋을까?"><span>⌕</span> 항공·숙소 비교하기</button>
+      <button class="side-link prompt-link" data-prompt="오사카 3박 4일 여행 일정표 예시를 만들어줘. 실제 상품이 아닌 예시 일정이라고 표시해줘."><span>▦</span> 일정표 만들기</button>
+      <div class="sidebar-bottom">
+        <div class="secure-note"><span>♧</span><div><strong>안전한 AI 연결</strong><small>API 키는 서버에서 관리돼요.</small></div></div>
+        <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer" class="api-link">Groq API 키 발급 ↗</a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu" aria-label="메뉴 열기">☰</button>
+        <div class="top-title"><span class="status-dot"></span><strong>트리피</strong><span class="muted">AI 여행 플래너</span></div>
+        <div style="display:flex;gap:8px;align-items:center"><button class="outline-btn" id="aiSettingsBtn">AI 설정 ⚙</button><button class="outline-btn" id="exportBtn">일정 내보내기 ↓</button></div>
+      </header>
+
+      <div class="workspace">
+        <section class="chat-panel">
+          <div class="chat-scroll" id="chatScroll">
+            <div class="welcome" id="welcome">
+              <div class="hero-icon">✈</div>
+              <div class="eyebrow">YOUR PERSONAL TRAVEL PLANNER</div>
+              <h1>어디로 떠나볼까요?</h1>
+              <p>여행 조건을 알려주면 항공편과 숙소를 비교하고<br class="desktop-only"> 나만의 일정표를 함께 만들어 드릴게요.</p>
+              <div class="starter-grid">
+                <button class="starter" data-prompt="오사카 3박 4일 여행을 계획하고 싶어. 1인 예산은 80만 원이야. 필요한 정보를 질문해줘."><span>✈</span><strong>여행 계획 시작</strong><small>목적지와 예산부터 정리해요</small><b>↗</b></button>
+                <button class="starter" data-prompt="항공권과 숙소를 고를 때 비교해야 할 조건을 정리해줘."><span>⌕</span><strong>항공·숙소 비교</strong><small>나에게 맞는 선택 기준 찾기</small><b>↗</b></button>
+                <button class="starter" data-prompt="도쿄 2박 3일 일정표를 예시로 만들어줘. 일정표에서 직접 수정할 수 있게 안내해줘."><span>▦</span><strong>일정표 만들기</strong><small>여행 일정을 한눈에 정리해요</small><b>↗</b></button>
+                <button class="starter" data-prompt="여행 예약 전에 확인해야 할 체크리스트를 알려줘."><span>✓</span><strong>예약 체크리스트</strong><small>놓치기 쉬운 조건 확인하기</small><b>↗</b></button>
+              </div>
+            </div>
+            <div class="messages" id="messages" aria-live="polite"></div>
+          </div>
+          <div class="composer-wrap">
+            <div class="composer">
+              <textarea id="messageInput" rows="1" placeholder="여행하고 싶은 곳이나 궁금한 점을 입력해 주세요..." aria-label="메시지 입력"></textarea>
+              <div class="composer-bottom">
+                <span class="composer-hint"><span>✦</span> AI가 계획을 도와드려요</span>
+                <button id="sendBtn" class="send-btn" aria-label="메시지 보내기">↑</button>
+              </div>
+            </div>
+            <p class="disclaimer">트리피의 상품·가격 예시는 실제 예약 정보가 아닐 수 있어요. 예약 전 Trip.com에서 확인해 주세요.</p>
+          </div>
+        </section>
+
+        <aside class="itinerary-panel">
+          <div class="itinerary-header">
+            <div><div class="eyebrow">YOUR TRIP BOARD</div><h2>나의 일정표</h2></div>
+            <button class="icon-btn" id="addDayBtn" title="일정 추가" aria-label="일정 추가">＋</button>
+          </div>
+          <div class="trip-summary">
+            <div class="destination-art"><span>✦</span><div class="art-sun"></div><div class="art-mountain"></div><div class="art-water"></div><label>TRAVEL NOTES</label></div>
+            <div class="trip-title-row"><div><h3 id="tripName">오사카, 일본</h3><p id="tripDates">3박 4일 · 날짜 미정</p></div><button class="text-btn" id="editTripBtn">수정</button></div>
+            <div class="trip-meta"><span>♧ <b id="travelerCount">2명</b></span><span>₩ <b id="tripBudget">1인 80만 원</b></span></div>
+          </div>
+          <div class="itinerary-toolbar"><span id="scheduleCount">DAY 1 · 3개 일정</span><button class="text-btn" id="clearDayBtn">비우기</button></div>
+          <div class="day-tabs" id="dayTabs"></div>
+          <div class="schedule-list" id="scheduleList"></div>
+          <button class="add-schedule-btn" id="addScheduleBtn">＋ 일정 직접 추가</button>
+          <form class="trip-search" id="tripSearchForm">
+            <h3>Trip.com에서 항공·숙소·기차 찾기</h3>
+            <p>검색 종류에 맞는 출발지와 도착지 또는 숙소 여행지를 입력하세요.</p>
+            <label for="tripSearchType">검색 종류</label>
+            <select id="tripSearchType" name="type"><option value="hotels">호텔·숙소</option><option value="flights">항공권</option><option value="trains">기차표</option></select>
+            <div id="tripSearchHotelFields">
+              <label for="tripSearchDestination">숙소 여행지</label>
+              <input id="tripSearchDestination" name="destination" placeholder="예: 오사카, 일본" value="오사카, 일본">
+            </div>
+            <div id="tripSearchRouteFields" hidden>
+              <label id="tripSearchOriginLabel" for="tripSearchOrigin">출발지</label>
+              <input id="tripSearchOrigin" name="origin" placeholder="예: 서울, 대한민국">
+              <label id="tripSearchArrivalLabel" for="tripSearchArrival">도착지</label>
+              <input id="tripSearchArrival" name="arrival" placeholder="예: 오사카, 일본">
+            </div>
+            <div class="form-row">
+              <label for="tripSearchStart">출발 / 체크인<input id="tripSearchStart" name="start" type="date"></label>
+              <label for="tripSearchEnd">귀국 / 체크아웃<input id="tripSearchEnd" name="end" type="date"></label>
+            </div>
+            <button class="trip-search-btn" type="submit">Trip.com에서 검색하기 ↗</button>
+            <div class="trip-search-note">트리피는 아직 트립닷컴의 실시간 상품 API와 연결되어 있지 않습니다. 검색 조건을 바탕으로 트립닷컴 페이지를 열며, 날짜와 세부 조건은 해당 사이트에서 다시 확인해야 할 수 있어요.</div>
+          </form>
+          <div class="trip-footer">
+            <div class="footer-icon">↗</div><div><strong>예약은 Trip.com에서</strong><p>일정을 정리한 뒤 항공편과 숙소의 최신 정보를 확인하세요.</p><a href="https://kr.trip.com/" target="_blank" rel="noreferrer">Trip.com 열기 ↗</a></div>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="editDialog" class="edit-dialog">
+    <form method="dialog" id="editForm">
+      <div class="dialog-head"><div><div class="eyebrow">TRIP DETAILS</div><h2 id="dialogTitle">일정 수정</h2></div><button class="icon-btn" value="cancel" aria-label="닫기">×</button></div>
+      <label>일정 이름<input id="itemTitle" required maxlength="100" placeholder="예: 도톤보리 산책"></label>
+      <div class="form-row"><label>시간<input id="itemTime" type="time" value="10:00" required></label><label>유형<select id="itemType"><option value="spot">관광</option><option value="food">식사</option><option value="transport">이동</option><option value="hotel">숙소</option><option value="flight">항공</option><option value="note">메모</option></select></label></div>
+      <label>메모<input id="itemNote" maxlength="180" placeholder="주소, 예약 정보 또는 참고사항"></label>
+      <div class="dialog-actions"><button class="outline-btn" value="cancel">취소</button><button class="primary-btn" id="saveItemBtn" value="save">저장</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="tripDialog" class="edit-dialog">
+    <form method="dialog" id="tripForm">
+      <div class="dialog-head"><div><div class="eyebrow">TRIP SETTINGS</div><h2>여행 정보 수정</h2></div><button class="icon-btn" value="cancel" aria-label="닫기">×</button></div>
+      <label>여행지<input id="editDestination" required maxlength="80"></label>
+      <div class="form-row"><label>출발일<input id="editStartDate" type="date"></label><label>귀국일<input id="editEndDate" type="date"></label></div>
+      <div class="form-row"><label>인원<input id="editTravelers" type="number" min="1" max="20" value="2"></label><label>1인 예산 (원)<input id="editBudget" type="number" min="0" step="10000" value="800000"></label></div>
+      <div class="dialog-actions"><button class="outline-btn" value="cancel">취소</button><button class="primary-btn" id="saveTripBtn" value="save">저장</button></div>
+    </form>
+  </dialog>
+  <dialog id="aiSettingsDialog" class="edit-dialog">
+    <form method="dialog" id="aiSettingsForm">
+      <div class="dialog-head"><div><div class="eyebrow">AI CONFIGURATION</div><h2>AI 설정</h2></div><button class="icon-btn" value="cancel" aria-label="닫기">×</button></div>
+      <div class="settings-note">이 버전은 입력한 키로 브라우저에서 Groq API에 직접 요청합니다. 키는 저장소에 저장하지 않고 새로고침 전까지 메모리에만 둡니다. 다만 브라우저 개발자 도구에서 본인 요청의 키를 볼 수 있으므로, 공개 웹사이트에서는 사용하지 말고 서버 환경변수 방식으로 전환하세요.</div>
+      <label>AI 제공자<select id="aiProvider"><option value="groq">Groq</option></select></label>
+      <label>Groq API 키<input id="aiApiKey" type="password" autocomplete="off" placeholder="gsk_... (선택)" spellcheck="false"></label>
+      <label>모델<select id="aiModel"><option value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile</option><option value="openai/gpt-oss-20b">GPT-OSS 20B</option><option value="openai/gpt-oss-120b">GPT-OSS 120B</option></select></label>
+      <label>답변 스타일<select id="aiStyle"><option value="balanced">균형 있게</option><option value="concise">간결하게</option><option value="detailed">자세하게</option></select></label>
+      <label>추가 지침<textarea id="aiInstructions" maxlength="1200" placeholder="예: 예산을 우선 고려하고, 확인되지 않은 항공권 가격은 단정하지 마세요."></textarea></label>
+      <div id="aiSettingsStatus" class="settings-status" role="status">현재 AI 연결 상태: API 키를 입력하면 연결을 테스트할 수 있어요.</div>
+      <button type="button" class="outline-btn" id="testAiConnectionBtn" style="width:100%;margin-top:8px">연결 테스트</button>
+      <div class="dialog-actions"><button class="outline-btn" value="cancel">취소</button><button class="primary-btn" id="saveAiSettingsBtn" value="save">설정 저장</button></div>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status"></div>
+  <script>
+const $ = (id) => document.getElementById(id);
+
+const state = {
+  messages: [],
+  aiSettings: { provider: "groq", model: "llama-3.3-70b-versatile", style: "balanced", instructions: "" },
+  days: [
+    { label: "DAY 1", items: [
+      { time: "09:00", title: "간사이 공항 도착", type: "transport", note: "예시 일정 · 실제 항공편 미연동" },
+      { time: "12:00", title: "난바 주변에서 점심", type: "food", note: "식당은 취향과 영업시간을 확인해 선택" },
+      { time: "15:00", title: "도톤보리 산책", type: "spot", note: "예시 일정 · 이동 시간 확인 필요" }
+    ]},
+    { label: "DAY 2", items: [
+      { time: "09:30", title: "오사카성 공원", type: "spot", note: "운영시간과 입장료 확인" },
+      { time: "12:30", title: "점심 식사", type: "food", note: "현지 식당 후보 탐색" },
+      { time: "15:00", title: "우메다 주변 둘러보기", type: "spot", note: "날씨와 이동 시간을 고려" }
+    ]},
+    { label: "DAY 3", items: [
+      { time: "10:00", title: "신사이바시 쇼핑", type: "spot", note: "매장 운영시간 확인" },
+      { time: "13:00", title: "카페 및 휴식", type: "food", note: "선호에 맞춰 변경 가능" }
+    ]},
+    { label: "DAY 4", items: [
+      { time: "09:00", title: "체크아웃 및 공항 이동", type: "transport", note: "항공편 출발 시간에 맞춰 조정" }
+    ]}
+  ],
+  activeDay: 0,
+  editIndex: null,
+  editDay: 0,
+  trip: { destination: "오사카, 일본", startDate: "", endDate: "", travelers: 2, budget: 800000 }
+};
+
+const typeLabels = { spot: "관광", food: "식사", transport: "이동", hotel: "숙소", flight: "항공", note: "메모" };
+let toastTimer;
+
+function showToast(message) {
+  const toast = $("toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+}
+
+function formatDate(dateString) {
+  if (!dateString) return "";
+  const d = new Date(`${dateString}T12:00:00`);
+  return `${d.getMonth() + 1}/${d.getDate()}`;
+}
+function refreshTripSummary() {
+  $("tripName").textContent = state.trip.destination || "나의 여행";
+  const start = formatDate(state.trip.startDate);
+  const end = formatDate(state.trip.endDate);
+  let nights = "";
+  if (state.trip.startDate && state.trip.endDate) {
+    const diff = Math.max(0, Math.round((new Date(state.trip.endDate) - new Date(state.trip.startDate)) / 86400000));
+    nights = `${diff}박 ${diff + 1}일`;
+  } else {
+    nights = `${state.days.length - 1}박 ${state.days.length}일`;
+  }
+  $("tripDates").textContent = `${nights} · ${start && end ? `${start}–${end}` : "날짜 미정"}`;
+  $("travelerCount").textContent = `${state.trip.travelers}명`;
+  $("tripBudget").textContent = `1인 ${Math.round(state.trip.budget / 10000)}만 원`;
+}
+function renderDays() {
+  $("dayTabs").innerHTML = state.days.map((day, index) => `
+    <button class="day-tab ${index === state.activeDay ? "active" : ""}" data-day="${index}">
+      <strong>${index + 1}일차</strong><span>${day.items.length}개 일정</span>
+    </button>`).join("");
+  $("scheduleCount").textContent = `DAY ${state.activeDay + 1} · ${state.days[state.activeDay].items.length}개 일정`;
+  $("dayTabs").querySelectorAll("[data-day]").forEach(btn => btn.addEventListener("click", () => {
+    state.activeDay = Number(btn.dataset.day);
+    renderDays();
+  }));
+  renderSchedule();
+}
+function renderSchedule() {
+  const items = state.days[state.activeDay]?.items || [];
+  if (!items.length) {
+    $("scheduleList").innerHTML = `<div class="empty-day">아직 일정이 없어요.<br>아래 버튼을 눌러 일정을 추가해 보세요.</div>`;
+    return;
+  }
+  $("scheduleList").innerHTML = items.map((item, index) => `
+    <div class="schedule-item">
+      <div class="schedule-time">${escapeHtml(item.time)}</div><div class="schedule-marker"></div>
+      <div class="schedule-content"><h4>${escapeHtml(item.title)}</h4>${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}<span class="type-tag">${typeLabels[item.type] || "메모"}</span></div>
+      <div class="item-actions"><button data-edit="${index}" aria-label="일정 수정">✎</button><button data-delete="${index}" aria-label="일정 삭제">×</button></div>
+    </div>`).join("");
+  $("scheduleList").querySelectorAll("[data-edit]").forEach(btn => btn.addEventListener("click", () => openItemDialog(Number(btn.dataset.edit))));
+  $("scheduleList").querySelectorAll("[data-delete]").forEach(btn => btn.addEventListener("click", () => {
+    const index = Number(btn.dataset.delete);
+    state.days[state.activeDay].items.splice(index, 1);
+    renderDays();
+    showToast("일정을 삭제했어요.");
+  }));
+}
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function openItemDialog(index = null) {
+  state.editIndex = index;
+  state.editDay = state.activeDay;
+  const item = index === null ? { time: "10:00", title: "", type: "spot", note: "" } : state.days[state.activeDay].items[index];
+  $("dialogTitle").textContent = index === null ? "일정 추가" : "일정 수정";
+  $("itemTitle").value = item.title;
+  $("itemTime").value = item.time;
+  $("itemType").value = item.type;
+  $("itemNote").value = item.note || "";
+  $("editDialog").showModal();
+}
+$("editForm").addEventListener("submit", (event) => {
+  if (event.submitter?.value !== "save") return;
+  event.preventDefault();
+  const item = { time: $("itemTime").value, title: $("itemTitle").value.trim(), type: $("itemType").value, note: $("itemNote").value.trim() };
+  if (!item.title) return;
+  const items = state.days[state.editDay].items;
+  if (state.editIndex === null) items.push(item); else items[state.editIndex] = item;
+  items.sort((a, b) => a.time.localeCompare(b.time));
+  state.activeDay = state.editDay;
+  $("editDialog").close();
+  renderDays();
+  showToast("일정표를 업데이트했어요.");
+});
+$("addScheduleBtn").addEventListener("click", () => openItemDialog());
+function updateTripSearchFields() {
+  const type = $("tripSearchType").value;
+  const routeSearch = type === "flights" || type === "trains";
+  $("tripSearchHotelFields").hidden = routeSearch;
+  $("tripSearchRouteFields").hidden = !routeSearch;
+  $("tripSearchOriginLabel").textContent = type === "trains" ? "기차 출발역 / 도시" : "항공 출발지";
+  $("tripSearchArrivalLabel").textContent = type === "trains" ? "기차 도착역 / 도시" : "항공 도착지";
+  $("tripSearchOrigin").placeholder = type === "trains" ? "예: 도쿄역" : "예: 서울, 대한민국";
+  $("tripSearchArrival").placeholder = type === "trains" ? "예: 오사카역" : "예: 오사카, 일본";
+  $("tripSearchStart").previousElementSibling;
+}
+$("tripSearchType").addEventListener("change", updateTripSearchFields);
+updateTripSearchFields();
+$("tripSearchForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const type = $("tripSearchType").value;
+  const origin = $("tripSearchOrigin").value.trim();
+  const arrival = $("tripSearchArrival").value.trim();
+  const destination = $("tripSearchDestination").value.trim();
+  const start = $("tripSearchStart").value;
+  const end = $("tripSearchEnd").value;
+  if (type === "hotels" && !destination) return showToast("숙소 여행지를 입력해 주세요.");
+  if (type !== "hotels" && (!origin || !arrival)) return showToast("출발지와 도착지를 모두 입력해 주세요.");
+  if (start && end && end < start) return showToast("종료일은 시작일 이후로 설정해 주세요.");
+  const query = new URLSearchParams();
+  if (type === "hotels") query.set("keyword", destination);
+  else {
+    query.set("from", origin);
+    query.set("to", arrival);
+    query.set("keyword", `${origin} ${arrival}`);
+  }
+  if (start) query.set("startDate", start);
+  if (end) query.set("endDate", end);
+  const paths = { hotels: "https://kr.trip.com/hotels/", flights: "https://kr.trip.com/flights/", trains: "https://kr.trip.com/trains/" };
+  window.open(`${paths[type]}?${query.toString()}`, "_blank", "noopener,noreferrer");
+  showToast("Trip.com 검색 페이지를 열었어요. 검색 조건을 확인해 주세요.");
+});
+$("addDayBtn").addEventListener("click", () => {
+  if (state.days.length >= 14) return showToast("일정은 최대 14일까지 추가할 수 있어요.");
+  state.days.push({ label: `DAY ${state.days.length + 1}`, items: [] });
+  state.activeDay = state.days.length - 1;
+  renderDays();
+  showToast("새로운 날짜를 추가했어요.");
+});
+$("clearDayBtn").addEventListener("click", () => {
+  if (!confirm(`${state.activeDay + 1}일차 일정을 모두 비울까요?`)) return;
+  state.days[state.activeDay].items = [];
+  renderDays();
+  showToast("해당 날짜의 일정을 비웠어요.");
+});
+
+$("editTripBtn").addEventListener("click", () => {
+  $("editDestination").value = state.trip.destination;
+  $("editStartDate").value = state.trip.startDate;
+  $("editEndDate").value = state.trip.endDate;
+  $("editTravelers").value = state.trip.travelers;
+  $("editBudget").value = state.trip.budget;
+  $("tripDialog").showModal();
+});
+$("tripForm").addEventListener("submit", (event) => {
+  if (event.submitter?.value !== "save") return;
+  event.preventDefault();
+  const start = $("editStartDate").value;
+  const end = $("editEndDate").value;
+  if (start && end && end < start) return showToast("귀국일은 출발일 이후로 설정해 주세요.");
+  state.trip = {
+    destination: $("editDestination").value.trim(),
+    startDate: start, endDate: end,
+    travelers: Math.min(20, Math.max(1, Number($("editTravelers").value) || 1)),
+    budget: Math.max(0, Number($("editBudget").value) || 0)
+  };
+  $("tripDialog").close();
+  refreshTripSummary();
+  showToast("여행 정보를 저장했어요.");
+});
+$("exportBtn").addEventListener("click", () => {
+  const lines = [`${state.trip.destination} 여행 일정`, `인원: ${state.trip.travelers}명`, `1인 예산: ${state.trip.budget.toLocaleString("ko-KR")}원`, ""];
+  state.days.forEach((day, i) => {
+    lines.push(`DAY ${i + 1}`);
+    if (!day.items.length) lines.push("  일정 없음");
+    day.items.forEach(item => lines.push(`  ${item.time} ${item.title} [${typeLabels[item.type] || "메모"}]${item.note ? ` — ${item.note}` : ""}`));
+    lines.push("");
+  });
+  const blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "tripi-itinerary.txt"; a.click();
+  URL.revokeObjectURL(url);
+  showToast("일정표를 파일로 내보냈어요.");
+});
+
+function appendMessage(role, content, options = {}) {
+  $("welcome").hidden = true;
+  const wrap = document.createElement("div");
+  wrap.className = `message ${role}`;
+  const avatar = document.createElement("div");
+  avatar.className = "avatar";
+  avatar.textContent = role === "assistant" ? "T" : "나";
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  if (options.typing) {
+    bubble.innerHTML = '<span class="typing"><i></i><i></i><i></i></span>';
+    wrap.dataset.typing = "true";
+  } else {
+    bubble.textContent = content;
+  }
+  wrap.append(avatar, bubble);
+  $("messages").append(wrap);
+  $("chatScroll").scrollTop = $("chatScroll").scrollHeight;
+  return wrap;
+}
+
+// 모델이 Markdown 기호를 반환하더라도 채팅창에는 읽기 편한 일반 문장으로 표시합니다.
+function cleanAssistantReply(text) {
+  return String(text || "")
+    .replace(/```[\w-]*\s*\n?([\s\S]*?)```/g, "$1")
+    .replace(/^\s{0,3}#{1,6}\s+/gm, "")
+    .replace(/^\s*[-*+]\s+/gm, "• ")
+    .replace(/^\s*\d+[.)]\s+/gm, "")
+    .replace(/^\s*[-*_]{3,}\s*$/gm, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/__(.*?)__/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .replace(/_(.*?)_/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, "$1 ($2)")
+    .replace(/^\s*>\s?/gm, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function buildContext() {
+  return `현재 여행 정보(사용자가 직접 편집 가능): ${JSON.stringify({
+    trip: state.trip,
+    itinerary: state.days.map((day, i) => ({ day: i + 1, items: day.items }))
+  })}. 일정표는 이 웹앱에서 별도로 편집할 수 있다. 실제 Trip.com 상품 API는 연결되지 않았으므로 실시간 상품 조회를 했다고 말하지 말 것.`;
+}
+
+// API 키는 브라우저 메모리에만 보관하며 localStorage/sessionStorage에는 저장하지 않습니다.
+let sessionApiKey = "";
+$("aiSettingsBtn").addEventListener("click", () => {
+  $("aiModel").value = state.aiSettings.model;
+  $("aiStyle").value = state.aiSettings.style;
+  $("aiInstructions").value = state.aiSettings.instructions;
+  $("aiApiKey").value = sessionApiKey;
+  $("aiSettingsStatus").textContent = sessionApiKey ? "API 키가 입력되어 있어요. 연결 테스트를 눌러 확인하세요." : "현재 AI 연결 상태: API 키를 입력하면 연결을 테스트할 수 있어요.";
+  $("aiSettingsDialog").showModal();
+});
+$("aiSettingsForm").addEventListener("submit", (event) => {
+  if (event.submitter?.value !== "save") return;
+  event.preventDefault();
+  sessionApiKey = $("aiApiKey").value.trim();
+  state.aiSettings = { provider: $("aiProvider").value, model: $("aiModel").value, style: $("aiStyle").value, instructions: $("aiInstructions").value.trim() };
+  $("aiSettingsDialog").close();
+  showToast(sessionApiKey ? "AI 설정을 저장했어요. 연결 테스트 후 대화해 보세요." : "AI 설정을 저장했어요. API 키를 입력해야 AI를 사용할 수 있어요.");
+});
+
+async function groqRequest(messages, maxTokens = 700) {
+  if (!sessionApiKey) throw new Error("AI 설정에서 Groq API 키를 입력해 주세요.");
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${sessionApiKey}` },
+    body: JSON.stringify({ model: state.aiSettings.model, messages, temperature: 0.6, max_tokens: maxTokens })
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error?.message || `Groq API 요청 실패 (${response.status})`);
+  const content = data.choices?.[0]?.message?.content;
+  if (typeof content !== "string" || !content.trim()) throw new Error("AI 응답이 비어 있습니다.");
+  return content.trim();
+}
+
+$("testAiConnectionBtn").addEventListener("click", async () => {
+  sessionApiKey = $("aiApiKey").value.trim();
+  state.aiSettings = { provider: $("aiProvider").value, model: $("aiModel").value, style: $("aiStyle").value, instructions: $("aiInstructions").value.trim() };
+  const status = $("aiSettingsStatus");
+  if (!sessionApiKey) { status.textContent = "Groq API 키를 먼저 입력해 주세요."; return; }
+  status.textContent = "Groq API 연결을 확인하고 있어요…";
+  $("testAiConnectionBtn").disabled = true;
+  try {
+    await groqRequest([{ role: "user", content: "Reply with exactly: TRIPI_CONNECTED" }], 20);
+    status.textContent = "연결 성공! 선택한 모델이 응답했습니다. 설정 저장을 눌러 사용하세요.";
+  } catch (error) {
+    status.textContent = `연결 실패: ${error.message}`;
+  } finally {
+    $("testAiConnectionBtn").disabled = false;
+  }
+});
+
+async function sendMessage(text = $("messageInput").value.trim()) {
+  if (!text || sending) return;
+  sending = true;
+  $("sendBtn").disabled = true;
+  $("messageInput").value = "";
+  $("messageInput").style.height = "auto";
+  state.messages.push({ role: "user", content: text });
+  appendMessage("user", text);
+  const typing = appendMessage("assistant", "", { typing: true });
+  let reply = "";
+  try {
+    const styleGuidance = { concise: "답변은 핵심 위주로 간결하게 작성하세요.", balanced: "핵심과 필요한 설명을 균형 있게 작성하세요.", detailed: "단계별로 자세하고 구체적으로 설명하세요." }[state.aiSettings.style];
+    const systemPrompt = `너는 트리피(Tripi) 여행 계획 도우미다. 자연스럽고 친근한 한국어 대화체로 답한다. 사용자의 목적지, 날짜, 인원, 예산을 고려해 실용적인 계획을 제안한다. 답변은 사람이 직접 설명하듯 자연스러운 문장으로 작성하고, Markdown 문법을 사용하지 않는다. 제목 기호(#), 굵게 표시(**), 인라인 코드 표시, Markdown 링크, 구분선(---)은 쓰지 않는다. 필요한 경우 짧은 문단으로 나누고, 여러 항목을 안내할 때는 일반적인 • 기호만 사용한다. 과도한 제목이나 형식적인 요약 대신 질문에 바로 답한다. 실제 Trip.com 상품 API는 연결되어 있지 않으므로 실시간 항공권·숙소 가격이나 예약 가능 여부를 조회했다고 주장하지 않는다. 불확실한 가격은 추정치라고 표시하고, 예약 전 공식 사이트에서 확인하도록 안내한다. ${styleGuidance}\n현재 여행 정보: ${buildContext()}\n추가 지침: ${state.aiSettings.instructions || "없음"}`;
+    const history = state.messages.slice(-12).map(message => ({ role: message.role === "assistant" ? "assistant" : "user", content: message.content }));
+    reply = cleanAssistantReply(await groqRequest([{ role: "system", content: systemPrompt }, ...history], state.aiSettings.style === "detailed" ? 1200 : 700));
+  } catch (error) {
+    reply = `AI 연결에 실패했어요: ${error.message}\n\nAI 설정에서 Groq API 키와 모델을 확인한 뒤 '연결 테스트'를 눌러 주세요. 이 앱은 실제 Trip.com 예약 시스템과 연결되어 있지 않아 실시간 상품 가격이나 예약을 처리하지는 않습니다.`;
+  }
+  typing.remove();
+  state.messages.push({ role: "assistant", content: reply });
+  appendMessage("assistant", reply);
+  sending = false;
+  $("sendBtn").disabled = false;
+  $("messageInput").focus();
+}
+let sending = false;
+$("sendBtn").addEventListener("click", () => sendMessage());
+$("messageInput").addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    sendMessage();
+  }
+});
+$("messageInput").addEventListener("input", () => {
+  const el = $("messageInput");
+  el.style.height = "auto";
+  el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+});
+document.querySelectorAll("[data-prompt]").forEach(btn => btn.addEventListener("click", () => sendMessage(btn.dataset.prompt)));
+$("newChatBtn").addEventListener("click", () => {
+  if (state.messages.length && !confirm("대화 기록을 지우고 새 여행 계획을 시작할까요?")) return;
+  state.messages = [];
+  $("messages").innerHTML = "";
+  $("welcome").hidden = false;
+  $("messageInput").value = "";
+  showToast("새 여행 계획을 시작해요.");
+});
+$("currentTripBtn").addEventListener("click", () => {
+  document.querySelector(".itinerary-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+$("mobileMenu").addEventListener("click", () => $("sidebar").classList.toggle("open"));
+document.querySelectorAll(".sidebar .side-link, .new-chat").forEach(btn => btn.addEventListener("click", () => {
+  if (window.innerWidth <= 800) $("sidebar").classList.remove("open");
+}));
+
+refreshTripSummary();
+renderDays();
+
+  </script>
+</body>
+</html>
